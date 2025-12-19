@@ -37,41 +37,47 @@ snake_spritesheet = pygame.image.load(r"./data/Snake.png")
 snake_head_sprite = snake_spritesheet.subsurface(pygame.Rect(TILESIZE, TILESIZE, TILESIZE, TILESIZE))
 
 
-
-def load_map(tileset_image, file_path): # file_path needs to be raw
-
-    # file transcription
-    with open(file_path) as file:
-        content = file.readlines()
-
-    map_size = [int(n) for n in content[0].strip().split("x")]
-    print(map_size)
-    final_canvas = pygame.Surface((map_size[0]*TILESIZE, map_size[1]*TILESIZE))
+def load_tiles(tileset_image, grid, background_color = pygame.Color(0, 0, 0, 0,)):
+    grid_size = (len(grid[0]), len(grid))
+    final_canvas = pygame.Surface((grid_size[0] * TILESIZE, grid_size[1] * TILESIZE))
 
     # loading tiles
-    tileset_size = (int(tileset_image.get_width()/TILESIZE), int(tileset_image.get_height()/TILESIZE))
-    single_tiles = [None]*(tileset_size[0]*tileset_size[1]+1)  # +1 to add "blank tile"
-    single_tiles[0] = pygame.Surface((TILESIZE, TILESIZE)).fill(pygame.Color(0, 0, 0, 0))
+    tileset_size = (int(tileset_image.get_width() / TILESIZE), int(tileset_image.get_height() / TILESIZE))
+    single_tiles = [None] * (tileset_size[0] * tileset_size[1] + 1)  # +1 to add "blank tile"
+    single_tiles[0] = (pygame.Surface((TILESIZE, TILESIZE)))
+    single_tiles[0].fill(pygame.Color(0, 0, 0, 0))
     for i in range(1, tileset_size[1] + 1):
         for j in range(tileset_size[0]):
-            single_tiles[i*j+1] = tileset_image.subsurface(pygame.Rect(j*TILESIZE, (i-1)*TILESIZE, TILESIZE, TILESIZE))
+            single_tiles[i * j + 1] = tileset_image.subsurface(pygame.Rect(j * TILESIZE, (i - 1) * TILESIZE, TILESIZE, TILESIZE))
 
-    # file processing and map loading
-    for i, line in enumerate(content[1:]):
-        line = line.strip()
-        if line[-1] == ",":
-            line = line[:-1]
-        line = [int(n) for n in line.split(",")]
-        for j, tile_id in enumerate(line):
-            final_canvas.blit(single_tiles[tile_id], (j*TILESIZE, i*TILESIZE))
+    for i, row in enumerate(grid):
+        for j, tile_id in enumerate(row):
             print(tile_id, end=", ")
+            final_canvas.blit(single_tiles[tile_id], (j*TILESIZE, i*TILESIZE))
         print()
 
     return final_canvas
 
 
-background = load_map(tileset, r"./data/Map.txt")
+def load_map(tileset_image, file_path, background_color = pygame.Color(0, 0, 0, 0,)): # file_path needs to be raw
 
+    # file transcription
+    with open(file_path) as file:
+        content = file.readlines()
+
+    # file processing
+    grid =  []
+    for i, line in enumerate(content[1:]):
+        line = line.strip()
+        if line[-1] == ",":
+            line = line[:-1]
+        line = [int(n) for n in line.split(",")]
+        grid.append(line)
+
+    return load_tiles(tileset_image, grid, background_color)
+
+
+background = load_map(tileset, r"./data/Map.txt")
 
 while running:
     # poll for events
