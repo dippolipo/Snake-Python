@@ -87,8 +87,7 @@ game_map[5][14] = APPLE
 snake_max_speed = 90/max_fps
 snake_speed = 0
 snake_pos = Vector2((initial_snake_length), 5)
-snake_dir = Vector2(1, 0)
-snake_last_dir = Vector2(1, 0)
+snake_dir = [Vector2(1, 0), Vector2(1, 0)] # 0 = last, 1 = current, ... FIFO
 snake_spritesheet = pygame.image.load(r"./data/Snake.png").convert_alpha()
 current_score = 0
 snake_head_sprite = [snake_spritesheet.subsurface(pygame.Rect(0, 0, TILESIZE, TILESIZE))]
@@ -153,21 +152,23 @@ while running:
                 if snake_speed == 0 and (event.key == up or event.key == down or event.key == right):
                     snake_speed = snake_max_speed
 
-                if event.key == up and not snake_last_dir == Vector2(0, 1):
-                    snake_dir = Vector2(0, -1)
-                elif event.key == down and not snake_last_dir == Vector2(0, -1):
-                    snake_dir = Vector2(0, 1)
-                elif event.key == left and not snake_last_dir == Vector2(1, 0):
-                    snake_dir = Vector2(-1, 0)
-                elif event.key == right and not snake_last_dir == Vector2(-1, 0):
-                    snake_dir = Vector2(1, 0)
+                if event.key == up and not snake_dir[-1] == Vector2(0, 1):
+                    snake_dir.append(Vector2(0, -1))
+                elif event.key == down and not snake_dir[-1] == Vector2(0, -1):
+                    snake_dir.append(Vector2(0, 1))
+                elif event.key == left and not snake_dir[-1] == Vector2(1, 0):
+                    snake_dir.append(Vector2(-1, 0))
+                elif event.key == right and not snake_dir[-1] == Vector2(-1, 0):
+                    snake_dir.append(Vector2(1, 0))
             case pygame.QUIT:
                 running = False
 
     # movement
     if delta == TILESIZE / 16:
         delta = 0
-        snake_pos += snake_dir
+        if len(snake_dir) == 1:
+            snake_dir.append(snake_dir[0])
+        snake_pos += snake_dir[1]
         snake_posx = int(snake_pos.x)
         snake_posy = int(snake_pos.y)
         if snake_posx < 0 or snake_posx >= map_width or snake_posy < 0 or snake_posy >= map_height or (game_map[snake_posy][snake_posx] != 0 and game_map[snake_posy][snake_posx] < map_width * map_height):
@@ -183,7 +184,7 @@ while running:
                         if game_map[y][x] != 0 and game_map[y][x] < map_width * map_height:
                             game_map[y][x] -= 1
             game_map[snake_posy][snake_posx] = current_score + initial_snake_length
-        snake_last_dir = snake_dir
+        snake_dir.pop(0)
     elif snake_speed != 0:
         delta += 1
 
