@@ -1,6 +1,8 @@
 import pygame
 from pygame import Vector2
 
+import random
+
 def init():
     pygame.init()
     if not pygame.display.get_init():
@@ -73,13 +75,12 @@ APPLE = 255
 # map
 map_width = 18
 map_height = 12
-initial_snake_length = 5
+initial_snake_length = 3
 game_map= [[0 for i in range(map_width)] for j in range(map_height)]
 game_map_render = [row.copy() for row in game_map]
 for x in range(initial_snake_length):
-    game_map_render[5][x + 1] = 4
     game_map[5][x + 1] = x+1
-game_map[0][0] = APPLE
+game_map[5][14] = APPLE
 # snake
 snake_max_speed = 90/max_fps
 snake_speed = 0
@@ -126,6 +127,16 @@ def render_frame():
 
     pygame.display.flip()
 
+def random_cell_replace(grid, starting_value, final_value):
+    positions = []
+    for y, row in enumerate(grid):
+        for x, cell in enumerate(row):
+            if cell == starting_value:
+                positions.append([x, y])
+    final_xy = random.choice(positions)
+    grid[final_xy[1]][final_xy[0]] = final_value
+    return grid
+
 
 delta = 0
 while running:
@@ -151,7 +162,7 @@ while running:
                 running = False
 
     # movement
-    if delta == TILESIZE / 8:
+    if delta == TILESIZE / 16:
         delta = 0
         snake_pos += snake_dir
         snake_posx = int(snake_pos.x)
@@ -162,6 +173,7 @@ while running:
         else:
             if game_map[snake_posy][snake_posx] == APPLE:
                 current_score += 1
+                game_map = random_cell_replace(game_map, 0, APPLE)
             else:
                 for y in range(len(game_map)):
                     for x in range(len(game_map[0])):
