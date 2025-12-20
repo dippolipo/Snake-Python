@@ -14,46 +14,41 @@ def init():
 init()
 
 # ENGINE
-running = True
-clock = pygame.time.Clock()
-pygame.display.set_icon(pygame.image.load(r"data/IconSmall.png"))
-pygame.display.set_caption("Snake")
-screen = pygame.display.set_mode((384, 216), pygame.SCALED) # SCALED called to allow fullscreen
-tileset = pygame.image.load(r"data/Tiles.png").convert_alpha()
-TILESIZE = 16
-max_fps = 30
-render_delta = 0
-pygame.display.toggle_fullscreen()
+def load_tileset(tileset_image, tile_size):
 
-
-def load_tiles(tileset_image, grid, background_color = pygame.Color(255, 255, 255, 0)):
-    grid_size = (len(grid[0]), len(grid))
-    final_canvas = pygame.Surface((grid_size[0] * TILESIZE, grid_size[1] * TILESIZE)).convert_alpha()
-    final_canvas.fill(background_color)
-
-    # loading tiles
-    tileset_size = (int(tileset_image.get_width() / TILESIZE), int(tileset_image.get_height() / TILESIZE))
-    single_tiles = [pygame.Surface((TILESIZE, TILESIZE)).convert_alpha()]
+    tileset_size = (int(tileset_image.get_width() / tile_size), int(tileset_image.get_height() / tile_size))
+    single_tiles = [pygame.Surface((tile_size, tile_size)).convert_alpha()]
     single_tiles[0].fill(pygame.Color(255, 255, 255, 0))
+
     for i in range(tileset_size[1]):
         for j in range(tileset_size[0]):
-            single_tiles.append(tileset_image.subsurface(pygame.Rect(j * TILESIZE, i * TILESIZE, TILESIZE, TILESIZE)))
+            single_tiles.append(tileset_image.subsurface(pygame.Rect(j * tile_size, i * tile_size, tile_size, tile_size)))
 
-    # draw tiles
+    return single_tiles
+
+
+def draw_tilemap(single_tiles, grid, background_color=pygame.Color(255, 255, 255, 0)):
+
+    tile_size = single_tiles[0].get_width()
+    grid_size = (len(grid[0]), len(grid))
+    final_canvas = pygame.Surface((grid_size[0] * tile_size, grid_size[1] * tile_size)).convert_alpha()
+    final_canvas.fill(background_color)
+
     for i, row in enumerate(grid):
         for j, tile_id in enumerate(row):
-            final_canvas.blit(single_tiles[tile_id], (j*TILESIZE, i*TILESIZE))
+            final_canvas.blit(single_tiles[tile_id], (j * tile_size, i * tile_size))
+
     return final_canvas
 
 
-def load_map(tileset_image, file_path, background_color = pygame.Color(255, 255, 255, 0)): # file_path needs to be raw
+def load_tilemap(file_path):  # file_path needs to be raw
 
     # file transcription
     with open(file_path) as file:
         content = file.readlines()
 
     # file processing
-    grid =  []
+    grid = []
     for i, line in enumerate(content[1:]):
         line = line.strip()
         if line[-1] == ",":
@@ -61,11 +56,18 @@ def load_map(tileset_image, file_path, background_color = pygame.Color(255, 255,
         line = [int(n) for n in line.split(",")]
         grid.append(line)
 
-    return load_tiles(tileset_image, grid, background_color)
+    return grid
 
 
-
-
+running = True
+clock = pygame.time.Clock()
+pygame.display.set_icon(pygame.image.load(r"data/IconSmall.png"))
+pygame.display.set_caption("Snake")
+screen = pygame.display.set_mode((384, 216), pygame.SCALED) # SCALED called to allow fullscreen
+TILESIZE = 16
+tileset = load_tileset(pygame.image.load(r"data/Tiles.png").convert_alpha(), TILESIZE)
+max_fps = 30
+pygame.display.toggle_fullscreen()
 
 # GAME
 # keys
@@ -96,7 +98,7 @@ snake_tail_sprite = [snake_spritesheet.subsurface(pygame.Rect(TILESIZE, 0, TILES
 for n in range(3):
     snake_tail_sprite.append(pygame.transform.rotate(snake_tail_sprite[n], 90))
 # init
-background = load_map(tileset, r"./data/Map.txt")
+background = draw_tilemap(tileset, load_tilemap(r"./data/Map.txt"))
 
 
 def render_frame():
@@ -111,7 +113,7 @@ def render_frame():
             elif game_map[y][x] <= map_width*map_height and game_map[y][x] != 0:
                 game_map_render[y][x] = 10
 
-    snake_body = load_tiles(tileset, game_map_render)
+    snake_body = draw_tilemap(tileset, game_map_render)
 
     # draw head
     """if snake_dir == Vector2(0, -1):
@@ -126,6 +128,7 @@ def render_frame():
     screen.blit(snake_body, (48, 12))
 
     pygame.display.flip()
+
 
 def random_cell_replace(grid, starting_value, final_value):
     positions = []
