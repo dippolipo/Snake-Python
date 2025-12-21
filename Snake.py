@@ -3,16 +3,6 @@ from pygame import Vector2
 
 import random
 
-def init():
-    pg.init()
-    if not pg.display.get_init():
-        print("display non-initiated")
-        input()
-        pg.quit()
-
-
-init()
-
 # ENGINE
 def load_tileset(tileset_image, tile_size):
 
