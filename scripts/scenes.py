@@ -5,7 +5,7 @@ from pygame import Vector2
 class Level(engine.Scene):
 
 
-    def __init__(self):
+    def init(self):
         # constants
         self.MAP_WIDTH = 18
         self.MAP_HEIGHT = 12
@@ -22,7 +22,7 @@ class Level(engine.Scene):
         # rendering
         self.game_map_render = [row.copy() for row in self.game_map]
         self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
-        engine.scene_stack.extend([self, LevelGUI()])
+        self.append_stack(LevelGUI)
 
 
     def key_events(self, event):
@@ -93,9 +93,8 @@ class Level(engine.Scene):
         engine.screen.blit(snake_body, (48, 12))
 
 
-class LevelGUI:
+class LevelGUI(engine.Scene):
     def tick(self):
-        engine.scene_stack[0].tick()
+        self.tick_stack(0)
     def draw(self):
-        engine.scene_stack[0].draw()
-        engine.scene_stack[0]
+        self.draw_stack(0)
