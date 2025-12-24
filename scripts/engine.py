@@ -6,9 +6,9 @@ import random
 clock = pg.time.Clock()
 screen = None
 running = True
-scene_stack = []
 
 class Scene:
+    stack = []
     def init(self):
         pass
 
@@ -43,34 +43,32 @@ class Scene:
 
     # stack manager
     def permit_scene_stack(self):
-        if self.scene_stack_index == 0 or self.scene_stack_index == len(scene_stack) - 1:
+        if self.scene_stack_index == 0 or self.scene_stack_index == len(Scene.stack) - 1:
             return True
         else:
             return False
 
     def draw_stack(self, index):
         if self.permit_scene_stack():
-            scene_stack[index].draw()
+            Scene.stack[index].draw()
 
     def tick_stack(self, index):
         if self.permit_scene_stack():
-            scene_stack[index].tick()
+            Scene.stack[index].tick()
 
     @staticmethod
     def replace_stack(new_scene):
-        global scene_stack
-        scene_stack = list(new_scene)
+        Scene.stack = list(new_scene)
 
     @staticmethod
     def remove_stack(index):
-        global scene_stack
-        for i in range(index, len(scene_stack)):
-            scene_stack[i + index].scene_stack_index -= 1
-        scene_stack.remove(index)
+        for i in range(index, len(Scene.stack)):
+            Scene.stack[i + index].scene_stack_index -= 1
+        Scene.stack.remove(index)
 
     @staticmethod
     def append_stack(new_scene):
-        scene_stack.append(new_scene(len(scene_stack)))
+        Scene.stack.append(new_scene(len(Scene.stack)))
 
 
 class Game:
@@ -81,8 +79,8 @@ class Game:
     def loop(self):
 
         while running:
-            scene_stack[-1].tick()
-            scene_stack[-1].draw()
+            Scene.stack[-1].tick()
+            Scene.stack[-1].draw()
             pg.display.flip()
             self.clock.tick(self.max_fps)
 
