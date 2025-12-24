@@ -4,6 +4,7 @@ import random
 clock = pg.time.Clock()
 screen = None
 running = True
+scene_stack = []
 
 class Scene:
     def key_events(self, event):
@@ -31,17 +32,14 @@ class Scene:
 
 class Game:
 
-    def __init__(self, max_fps, first_scene):
+    def __init__(self, max_fps):
         self.max_fps = max_fps
-        self.first_scene = first_scene
         self.clock = pg.time.Clock()
-
     def loop(self):
-        current_scene = [self.first_scene]
 
         while running:
-            current_scene[-1].tick()
-            current_scene[-1].draw()
+            scene_stack[-1].tick()
+            scene_stack[-1].draw()
             pg.display.flip()
             self.clock.tick(self.max_fps)
 

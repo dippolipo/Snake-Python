@@ -22,6 +22,8 @@ class Level(engine.Scene):
         # rendering
         self.game_map_render = [row.copy() for row in self.game_map]
         self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
+        engine.scene_stack.extend([self, LevelGUI()])
+
 
     def key_events(self, event):
         if event.key == pg.K_ESCAPE:
@@ -90,3 +92,10 @@ class Level(engine.Scene):
 
         engine.screen.blit(snake_body, (48, 12))
 
+
+class LevelGUI:
+    def tick(self):
+        engine.scene_stack[0].tick()
+    def draw(self):
+        engine.scene_stack[0].draw()
+        engine.scene_stack[0]
