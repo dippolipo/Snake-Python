@@ -1,25 +1,58 @@
 import pygame as pg
+import random
 
 clock = pg.time.Clock()
+screen = None
+running = True
 
 class Scene:
     def key_events(self, event):
         print("events not done")
         pg.quit()
 
-    def event_poll(self):
+    def get_events(self):
+        global running
+
         for event in pg.event.get():
             match event.type:
                 case pg.KEYDOWN:
                     self.key_events(event)
+                case pg.QUIT:
+                    running = False
 
     def tick(self):
         print("tick not done")
         pg.quit()
 
-    def render_frame(self):
+    def draw(self):
         print("render_frame not done")
         pg.quit()
+
+
+class Game:
+
+    def __init__(self, max_fps, first_scene):
+        self.max_fps = max_fps
+        self.first_scene = first_scene
+        self.clock = pg.time.Clock()
+
+    def loop(self):
+        current_scene = [self.first_scene]
+
+        while running:
+            current_scene[-1].tick()
+            current_scene[-1].draw()
+            pg.display.flip()
+            self.clock.tick(self.max_fps)
+
+
+def pygame_init(name, icon, screen_size): # TODO
+    global screen
+    pg.init()
+    pg.display.set_icon(pg.image.load(icon))
+    pg.display.set_caption(name)
+    screen = pg.display.set_mode((384, 216), pg.SCALED)
+
 
 def load_tileset(tileset_image, tile_size):
 
@@ -35,7 +68,6 @@ def load_tileset(tileset_image, tile_size):
 
 
 def draw_tilemap(single_tiles, grid, background_color=pg.Color(255, 255, 255, 0)):
-
     tile_size = single_tiles[0].get_width()
     grid_size = (len(grid[0]), len(grid))
     final_canvas = pg.Surface((grid_size[0] * tile_size, grid_size[1] * tile_size)).convert_alpha()
@@ -62,3 +94,15 @@ def load_tilemap(file_path):  # file_path needs to be raw
             line = line[:-1]
         line = [int(n) for n in line.split(",")]
         grid.append(line)
+    return grid
+
+
+def random_cell_replace(grid, starting_value, final_value):
+    positions = []
+    for y, row in enumerate(grid):
+        for x, cell in enumerate(row):
+            if cell == starting_value:
+                positions.append([x, y])
+    final_xy = random.choice(positions)
+    grid[final_xy[1]][final_xy[0]] = final_value
+    return grid
