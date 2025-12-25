@@ -77,27 +77,30 @@ class Level(engine.Scene):
 
 
     def draw(self):
-        engine.screen.blit(self.background, [0, -4])
+        engine.screen.blit(self.background, [0, 0])
+
         for y, row in enumerate(self.game_map_render):
             for x, cell in enumerate(row):
 
                 if self.game_map[y][x] == self.APPLE:
-                    self.game_map_render[y][x] = 9
+                    self.game_map_render[y][x] = 1
                 elif cell != 0 and self.game_map[y][x] == 0:
                     self.game_map_render[y][x] = 0
                 elif self.game_map[y][x] <= self.MAP_WIDTH * self.MAP_HEIGHT and self.game_map[y][x] != 0:
-                    self.game_map_render[y][x] = 10
+                    self.game_map_render[y][x] = 24
 
-        snake_body = engine.draw_tilemap(globs.tileset, self.game_map_render)
+        snake_body = engine.draw_tilemap(globs.entities_tiles, self.game_map_render)
 
-        engine.screen.blit(snake_body, (48, 12))
+        engine.screen.blit(snake_body, (48, 16))
 
 
 class LevelGUI(engine.Scene):
+    def init(self):
+        self.static_gui = pg.surface
     def tick(self):
         self.tick_stack(0)
 
     def draw(self):
         self.draw_stack(0)
         textblock = globs.font.draw(self.stack[0].score)
-        engine.screen.blit(textblock, (192, 1))
+        engine.screen.blit(textblock, (192 - int(textblock.get_width() / 2), 3))

@@ -125,14 +125,14 @@ class FontPNG:
 
     def draw(self, text = "404", background_color=pg.Color(255, 255, 255, 0)):
         text = str(text)
-        text_size = [1, 1]
-        line_width = 1
+        text_size = [0, 1]
+        line_width = 0
         for char in text:
             if char == "\n":
                 text_size[1] += 1
                 if text_size[0] < line_width:
                     text_size[0] = line_width
-                line_width = 1
+                line_width = 0
             else:
                 line_width += 1
 
