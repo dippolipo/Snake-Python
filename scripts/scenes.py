@@ -96,5 +96,8 @@ class Level(engine.Scene):
 class LevelGUI(engine.Scene):
     def tick(self):
         self.tick_stack(0)
+
     def draw(self):
         self.draw_stack(0)
+        textblock = globs.font.draw(self.stack[0].score)
+        engine.screen.blit(textblock, (192, 1))
