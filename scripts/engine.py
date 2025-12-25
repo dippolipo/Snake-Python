@@ -1,5 +1,6 @@
 from operator import truediv
 
+import pygame
 import pygame as pg
 import random
 
@@ -68,7 +69,9 @@ class Scene:
 
     @staticmethod
     def append_stack(new_scene):
-        Scene.stack.append(new_scene(len(Scene.stack)))
+        Scene.stack.append(None)
+        stack_pos = len(Scene.stack) - 1
+        Scene.stack[stack_pos] = new_scene(stack_pos)
 
 
 class Game:
@@ -83,6 +86,72 @@ class Game:
             Scene.stack[-1].draw()
             pg.display.flip()
             self.clock.tick(self.max_fps)
+
+
+class FontPNG:
+    def __init__(self, file_path): # no file extension
+        self.dict = {}
+        self.char_images = []
+        self.line_spacing = 1
+        self.char_size = []
+        self.char_spacing = 1
+        self.load(file_path)
+
+
+    def load(self, file_path):
+        txt_path = file_path + ".txt"
+        png_path = file_path + ".png"
+        image = pygame.image.load(png_path).convert_alpha()
+
+        with open(txt_path) as file:
+            content = file.readlines()
+
+        self.char_size = [int(n) for n in content[0].split("x")]
+        self.line_spacing = int(content[2])
+        self.char_spacing = int(content[3])
+        self.dict[" "] = pg.Surface((int(content[1]) - self.char_spacing * 2, self.char_size[1]), pg.SRCALPHA).fill(pg.Color(255, 255, 255, 0))
+        chars_horizontal = int((image.get_width() - 1) / (self.char_size[0] + 1)) # 1 pixel space between each letter
+        chars_vertical = int((image.get_height() - 1) / (self.char_size[1] + 1))  # 1 pixel space between each letter
+        char_i = 0
+        charset_length = len(content[4])
+        for y in range(chars_vertical):
+            for x in range(chars_horizontal):
+                if char_i < charset_length:
+                    self.dict[content[4][char_i]] =  image.subsurface(pg.Rect(1 + x * (self.char_size[0] + 1), 1 + y * (self.char_size[1] + 1), self.char_size[0], self.char_size[1]))
+                    char_i += 1
+                else:
+                    break
+
+
+    def draw(self, text = "404", background_color=pg.Color(255, 255, 255, 0)):
+        text = str(text)
+        text_size = [1, 1]
+        line_width = 1
+        for char in text:
+            if char == "\n":
+                text_size[1] += 1
+                if text_size[0] < line_width:
+                    text_size[0] = line_width
+                line_width = 1
+            else:
+                line_width += 1
+
+        if text_size[0] < line_width:
+            text_size[0] = line_width
+
+        textblock = pg.Surface(((self.char_size[0] + self.char_spacing) * text_size[0], (self.char_size[1] + self.char_spacing) * text_size[1]), pg.SRCALPHA)
+        textblock.fill(background_color)
+
+        x, y = 0, 0
+        for char in text:
+            if char == "\n":
+                y += self.char_size[1] + self.line_spacing
+                x = 0
+            else:
+                textblock.blit(self.dict[char], (x, y))
+                x += self.char_size[0] + self.line_spacing
+
+        return textblock
 
 
 def pygame_init(name, icon, screen_size): # TODO
