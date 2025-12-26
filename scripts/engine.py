@@ -171,7 +171,7 @@ class FontPNG:
 
 
 class ButtonArray:
-    def __init__(self, image_path, buttons_names, font, v_space = 0, text_offset = (0, 0)): # image must be horizontal
+    def __init__(self, image_path, buttons_names, font, v_space = 0, text_offset = None): # image must be horizontal
         image = pg.image.load(image_path).convert_alpha()
         self.names = buttons_names
         self.button_image = []
@@ -183,6 +183,8 @@ class ButtonArray:
         self.text_offset = text_offset
         self.selected = 0
         self.pressed = False
+        if self.text_offset == None:
+            self.text_offset = (1, self.size[1]/2-self.font.char_size[1]/2)
 
     def cursor_move(self, movement): # movement is 1 or -1
         self.selected += movement
@@ -205,7 +207,7 @@ class ButtonArray:
             else:
                 canvas.blit(self.button_image[0], dest)
             text = self.font.draw(self.names[i])
-            canvas.blit(text, (dest[0] + self.text_offset[1], dest[1] + self.text_offset[1]))
+            canvas.blit(text, (dest[0] + self.size[0]/2 - text.get_width() / 2 + self.text_offset[0], dest[1] + self.text_offset[1]))
         return canvas
 
 
