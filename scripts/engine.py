@@ -59,7 +59,8 @@ class Scene:
 
     @staticmethod
     def replace_stack(new_scene):
-        Scene.stack = list(new_scene)
+        Scene.stack = []
+        Scene.append_stack(new_scene)
 
     @staticmethod
     def remove_stack(index):
