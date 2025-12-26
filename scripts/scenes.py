@@ -2,11 +2,8 @@ from scripts import engine, globs, entities
 import pygame as pg
 from pygame import Vector2
 
-from scripts.engine import draw_tilemap
-
 
 class Level(engine.Scene):
-
 
     def init(self):
         # constants
@@ -14,6 +11,7 @@ class Level(engine.Scene):
         self.MAP_HEIGHT = 12
         self.APPLE = 255
         # logic
+        self.pause = False
         self.snake = entities.Snake((3, 5), 3, (1, 0))
         self.delta = 0
         self.game_map = [[0 for i in range(self.MAP_WIDTH)] for j in range(self.MAP_HEIGHT)]
@@ -30,6 +28,7 @@ class Level(engine.Scene):
 
     def key_down_events(self, key):
         if key == pg.K_ESCAPE:
+            self.pause = True
             self.append_stack(PauseLevel)
 
         if self.snake.speed == 0 and (key == globs.UP or key == globs.DOWN or key == globs.RIGHT):
@@ -48,6 +47,8 @@ class Level(engine.Scene):
     def tick(self):
 
         self.get_events()
+        if self.pause:
+            return
 
         # movement TODO: implement different speeds
         if len(self.snake.dir) == 1:
@@ -142,6 +143,7 @@ class PauseLevel(engine.Scene):
                 engine.running = False
 
     def resume(self):
+        self.stack[0].pause = False
         self.del_stack(self.scene_stack_index)
         self.append_stack(ResumeLevel)
 
