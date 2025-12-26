@@ -2,6 +2,9 @@ from scripts import engine, globs, entities
 import pygame as pg
 from pygame import Vector2
 
+from scripts.engine import draw_tilemap
+
+
 class Level(engine.Scene):
 
 
@@ -111,11 +114,16 @@ class LevelGUI(engine.Scene):
 
 class PauseLevel(engine.Scene):
     def init(self):
-        self.button = ["RESUME", "RESET", "QUIT"]
+        self.buttons = ["RESUME", "RESET", "QUIT"]
         self.selected = 0
         self.pressed = False
         self.stack[0].draw()
         self.background = engine.screen.copy()
+        self.button_image = []
+        button_tiles = engine.load_tileset(pg.image.load(r"data/Button.png").convert_alpha(), 16)
+        for i in range(len(self.buttons)):
+            self.button_image.append(draw_tilemap(button_tiles, [[1 + i*3, 2 + i*3, 3 + i*3]]))
+
 
     def key_down_events(self, event):
         if event.key == globs.PAUSE:
@@ -123,12 +131,12 @@ class PauseLevel(engine.Scene):
 
         if event.key == globs.UP:
             if self.selected == 0:
-                self.selected = len(self.button) - 1
+                self.selected = len(self.buttons) - 1
             else:
                 self.selected -= 1
             self.pressed = False
         elif event.key == globs.DOWN:
-            if self.selected == len(self.button) - 1:
+            if self.selected == len(self.buttons) - 1:
                 self.selected = 0
             else:
                 self.selected += 1
@@ -159,5 +167,14 @@ class PauseLevel(engine.Scene):
         pause_text = globs.font.draw("MENU")
         engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
 
-        for i in range(len(self.button)):
-            pass
+        for i in range(len(self.buttons)):
+            button_pos = (192-24, 68 + i * 32)
+            if self.selected == i:
+                if self.pressed:
+                    engine.screen.blit(self.button_image[2], button_pos)
+                else:
+                    engine.screen.blit(self.button_image[1], button_pos)
+            else:
+                engine.screen.blit(self.button_image[0], button_pos)
+            text = globs.font.draw(self.buttons[i])
+            engine.screen.blit(text, (button_pos[0] + 25 - int(text.get_width() / 2), button_pos[1] + 3))
