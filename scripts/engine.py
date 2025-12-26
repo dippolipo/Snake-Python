@@ -139,7 +139,7 @@ class FontPNG:
         if text_size[0] < line_width:
             text_size[0] = line_width
 
-        textblock = pg.Surface(((self.char_size[0] + self.char_spacing) * text_size[0], (self.char_size[1] + self.char_spacing) * text_size[1]), pg.SRCALPHA)
+        textblock = pg.Surface(((self.char_size[0] + self.char_spacing) * text_size[0], (self.char_size[1] + self.line_spacing) * text_size[1]), pg.SRCALPHA)
         textblock.fill(background_color)
 
         x, y = 0, 0
@@ -149,7 +149,7 @@ class FontPNG:
                 x = 0
             else:
                 textblock.blit(self.dict[char], (x, y))
-                x += self.char_size[0] + self.line_spacing
+                x += self.char_size[0] + self.char_spacing
 
         return textblock
 

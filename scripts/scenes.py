@@ -96,11 +96,14 @@ class Level(engine.Scene):
 
 class LevelGUI(engine.Scene):
     def init(self):
-        self.static_gui = pg.surface
+        self.static_gui = pg.Surface((384, 216), pg.SRCALPHA)
+        self.static_gui.fill(pg.Color(255, 255, 255, 0))
+        self.static_gui.blit(globs.font.draw(f"TOP:\n{globs.highscore[globs.difficulty]}\n"), (0, 0))
     def tick(self):
         self.tick_stack(0)
 
     def draw(self):
         self.draw_stack(0)
         textblock = globs.font.draw(self.stack[0].score)
+        engine.screen.blit(self.static_gui, (0, 0))
         engine.screen.blit(textblock, (192 - int(textblock.get_width() / 2), 3))
