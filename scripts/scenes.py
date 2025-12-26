@@ -25,9 +25,9 @@ class Level(engine.Scene):
         self.append_stack(LevelGUI)
 
 
-    def key_events(self, event):
+    def key_down_events(self, event):
         if event.key == pg.K_ESCAPE:
-            pause = True
+            self.append_stack(PauseLevel)
 
         if self.snake.speed == 0 and (event.key == globs.UP or event.key == globs.DOWN or event.key == globs.RIGHT):
             self.snake.speed = self.snake.max_speed
@@ -107,3 +107,57 @@ class LevelGUI(engine.Scene):
         textblock = globs.font.draw(self.stack[0].score)
         engine.screen.blit(self.static_gui, (0, 0))
         engine.screen.blit(textblock, (192 - int(textblock.get_width() / 2), 3))
+
+
+class PauseLevel(engine.Scene):
+    def init(self):
+        self.button = ["RESUME", "RESET", "QUIT"]
+        self.selected = 0
+        self.pressed = False
+        self.stack[0].draw()
+        self.background = engine.screen.copy()
+
+    def key_down_events(self, event):
+        if event.key == globs.PAUSE:
+            self.resume()
+
+        if event.key == globs.UP:
+            if self.selected == 0:
+                self.selected = len(self.button) - 1
+            else:
+                self.selected -= 1
+            self.pressed = False
+        elif event.key == globs.DOWN:
+            if self.selected == len(self.button) - 1:
+                self.selected = 0
+            else:
+                self.selected += 1
+            self.pressed = False
+
+        if event.key == globs.A:
+            self.pressed = True
+
+    def key_up_events(self, event):
+        if event.key == globs.A and self.pressed:
+            if self.selected == 0:
+                self.resume()
+            elif self.selected == 1:
+                self.replace_stack(Level)
+            elif self.selected == 2:
+                engine.running = False
+
+    def resume(self):
+        self.del_stack(self.scene_stack_index)
+
+    def tick(self):
+        self.get_events()
+
+
+    def draw(self):
+        engine.screen.blit(self.background, (0, 0))
+
+        pause_text = globs.font.draw("MENU")
+        engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
+
+        for i in range(len(self.button)):
+            pass

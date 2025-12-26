@@ -17,9 +17,12 @@ class Scene:
         self.scene_stack_index = scene_stack_index
         self.init()
 
-    def key_events(self, event):
-        print("events not done")
-        pg.quit()
+    def key_down_events(self, event):
+        pass
+
+
+    def key_up_events(self, event):
+        pass
 
 
     def get_events(self):
@@ -28,7 +31,9 @@ class Scene:
         for event in pg.event.get():
             match event.type:
                 case pg.KEYDOWN:
-                    self.key_events(event)
+                    self.key_down_events(event)
+                case pg.KEYUP:
+                    self.key_up_events(event)
                 case pg.QUIT:
                     running = False
 
@@ -63,10 +68,10 @@ class Scene:
         Scene.append_stack(new_scene)
 
     @staticmethod
-    def remove_stack(index):
+    def del_stack(index):
         for i in range(index, len(Scene.stack)):
-            Scene.stack[i + index].scene_stack_index -= 1
-        Scene.stack.remove(index)
+            Scene.stack[i].scene_stack_index -= 1
+        del Scene.stack[index]
 
     @staticmethod
     def append_stack(new_scene):

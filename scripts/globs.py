@@ -7,6 +7,6 @@ TILE_SIZE = 16
 tileset = engine.load_tileset(pg.image.load(r"data/Tilemap.png").convert_alpha(), TILE_SIZE)
 entities_tiles = engine.load_tileset(pg.image.load(r"data/Entities.png").convert_alpha(), TILE_SIZE)
 font =  engine.FontPNG(r"data/Font")
-UP, DOWN, LEFT, RIGHT, A, B, PAUSE= pg.K_w, pg.K_s, pg.K_a, pg.K_d, pg.K_j, pg.K_i, pg.K_ESCAPE
+UP, DOWN, LEFT, RIGHT, A, B, C, PAUSE= pg.K_w, pg.K_s, pg.K_a, pg.K_d, pg.K_j, pg.K_i, pg.K_o, pg.K_ESCAPE
 difficulty = 2 # from 0 to 2
 highscore = [50, 40, 30]
