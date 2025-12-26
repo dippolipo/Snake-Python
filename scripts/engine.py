@@ -170,6 +170,45 @@ class FontPNG:
         return textblock
 
 
+class ButtonArray:
+    def __init__(self, image_path, buttons_names, font, v_space = 0, text_offset = (0, 0)): # image must be horizontal
+        image = pg.image.load(image_path).convert_alpha()
+        self.names = buttons_names
+        self.button_image = []
+        self.font = font
+        self.v_space = v_space
+        self.size = (image.get_width()/3, image.get_height())
+        for i in range(3):
+            self.button_image.append(image.subsurface(pg.Rect(i * self.size[0], 0, self.size[0], self.size[1])))
+        self.text_offset = text_offset
+        self.selected = 0
+        self.pressed = False
+
+    def cursor_move(self, movement): # movement is 1 or -1
+        self.selected += movement
+        self.pressed = False
+
+        if self.selected >= len(self.names):
+            self.selected -= len(self.names)
+        elif self.selected < 0:
+            self.selected += len(self.names)
+
+    def print_vertically(self):
+        canvas = pg.Surface((self.size[0], self.size[1]*len(self.names) + self.v_space * (len(self.names) - 1)), pg.SRCALPHA)
+        for i in range(len(self.names)):
+            dest = (0, (self.size[1] + self.v_space) * i)
+            if self.selected == i:
+                if self.pressed:
+                    canvas.blit(self.button_image[2], dest)
+                else:
+                    canvas.blit(self.button_image[1], dest)
+            else:
+                canvas.blit(self.button_image[0], dest)
+            text = self.font.draw(self.names[i])
+            canvas.blit(text, (dest[0] + self.text_offset[1], dest[1] + self.text_offset[1]))
+        return canvas
+
+
 def pygame_init(name, icon, screen_size): # TODO
     global screen
     pg.init()

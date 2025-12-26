@@ -114,15 +114,10 @@ class LevelGUI(engine.Scene):
 
 class PauseLevel(engine.Scene):
     def init(self):
-        self.buttons = ["RESUME", "RESET", "QUIT"]
-        self.selected = 0
-        self.pressed = False
+        buttons_names = ["RESUME", "RESET", "QUIT"]
+        self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.stack[0].draw()
         self.background = engine.screen.copy()
-        self.button_image = []
-        button_tiles = engine.load_tileset(pg.image.load(r"data/Button.png").convert_alpha(), 16)
-        for i in range(len(self.buttons)):
-            self.button_image.append(draw_tilemap(button_tiles, [[1 + i*3, 2 + i*3, 3 + i*3]]))
 
 
     def key_down_events(self, key):
@@ -130,28 +125,20 @@ class PauseLevel(engine.Scene):
             self.resume()
 
         if key == globs.UP:
-            if self.selected == 0:
-                self.selected = len(self.buttons) - 1
-            else:
-                self.selected -= 1
-            self.pressed = False
+            self.buttons.cursor_move(-1)
         elif key == globs.DOWN:
-            if self.selected == len(self.buttons) - 1:
-                self.selected = 0
-            else:
-                self.selected += 1
-            self.pressed = False
+            self.buttons.cursor_move(+1)
 
         if key == globs.A:
-            self.pressed = True
+            self.buttons.pressed = True
 
     def key_up_events(self, key):
-        if key == globs.A and self.pressed:
-            if self.selected == 0:
+        if key == globs.A and self.buttons.pressed:
+            if self.buttons.selected == 0:
                 self.resume()
-            elif self.selected == 1:
+            elif self.buttons.selected == 1:
                 self.replace_stack(type(self.stack[0]))
-            elif self.selected == 2:
+            elif self.buttons.selected == 2:
                 engine.running = False
 
     def resume(self):
@@ -168,17 +155,8 @@ class PauseLevel(engine.Scene):
         pause_text = globs.font.draw("MENU")
         engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
 
-        for i in range(len(self.buttons)):
-            button_pos = (192-24, 68 + i * 32)
-            if self.selected == i:
-                if self.pressed:
-                    engine.screen.blit(self.button_image[2], button_pos)
-                else:
-                    engine.screen.blit(self.button_image[1], button_pos)
-            else:
-                engine.screen.blit(self.button_image[0], button_pos)
-            text = globs.font.draw(self.buttons[i])
-            engine.screen.blit(text, (button_pos[0] + 25 - int(text.get_width() / 2), button_pos[1] + 3))
+        buttons_surface = self.buttons.print_vertically()
+        engine.screen.blit(buttons_surface, (384/2-self.buttons.size[0]/2, 216/2 - self.buttons.size[1]/2))
 
 
 class ResumeLevel(engine.Scene):
