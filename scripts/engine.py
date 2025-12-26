@@ -4,6 +4,8 @@ import pygame
 import pygame as pg
 import random
 
+from pygame.display import toggle_fullscreen
+
 clock = pg.time.Clock()
 screen = None
 running = True
@@ -17,11 +19,15 @@ class Scene:
         self.scene_stack_index = scene_stack_index
         self.init()
 
-    def key_down_events(self, event):
+    def key_down_events(self, key):
         pass
 
 
-    def key_up_events(self, event):
+    def key_up_events(self, key):
+        pass
+
+
+    def unusual_event(self, event):
         pass
 
 
@@ -31,11 +37,15 @@ class Scene:
         for event in pg.event.get():
             match event.type:
                 case pg.KEYDOWN:
-                    self.key_down_events(event)
+                    if event.key == pg.K_F11:
+                        pg.display.toggle_fullscreen()
+                    self.key_down_events(event.key)
                 case pg.KEYUP:
-                    self.key_up_events(event)
+                    self.key_up_events(event.key)
                 case pg.QUIT:
                     running = False
+                case _:
+                    self.unusual_event(event)
 
 
     def tick(self):

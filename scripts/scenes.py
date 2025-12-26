@@ -28,20 +28,20 @@ class Level(engine.Scene):
         self.append_stack(LevelGUI)
 
 
-    def key_down_events(self, event):
-        if event.key == pg.K_ESCAPE:
+    def key_down_events(self, key):
+        if key == pg.K_ESCAPE:
             self.append_stack(PauseLevel)
 
-        if self.snake.speed == 0 and (event.key == globs.UP or event.key == globs.DOWN or event.key == globs.RIGHT):
+        if self.snake.speed == 0 and (key == globs.UP or key == globs.DOWN or key == globs.RIGHT):
             self.snake.speed = self.snake.max_speed
 
-        if event.key == globs.UP and not self.snake.dir[-1] == Vector2(0, 1):
+        if key == globs.UP and not self.snake.dir[-1] == Vector2(0, 1):
             self.snake.dir.append(Vector2(0, -1))
-        elif event.key == globs.DOWN and not self.snake.dir[-1] == Vector2(0, -1):
+        elif key == globs.DOWN and not self.snake.dir[-1] == Vector2(0, -1):
             self.snake.dir.append(Vector2(0, 1))
-        elif event.key == globs.LEFT and not self.snake.dir[-1] == Vector2(1, 0):
+        elif key == globs.LEFT and not self.snake.dir[-1] == Vector2(1, 0):
             self.snake.dir.append(Vector2(-1, 0))
-        elif event.key == globs.RIGHT and not self.snake.dir[-1] == Vector2(-1, 0):
+        elif key == globs.RIGHT and not self.snake.dir[-1] == Vector2(-1, 0):
             self.snake.dir.append(Vector2(1, 0))
 
 
@@ -125,28 +125,28 @@ class PauseLevel(engine.Scene):
             self.button_image.append(draw_tilemap(button_tiles, [[1 + i*3, 2 + i*3, 3 + i*3]]))
 
 
-    def key_down_events(self, event):
-        if event.key == globs.PAUSE:
+    def key_down_events(self, key):
+        if key == globs.PAUSE:
             self.resume()
 
-        if event.key == globs.UP:
+        if key == globs.UP:
             if self.selected == 0:
                 self.selected = len(self.buttons) - 1
             else:
                 self.selected -= 1
             self.pressed = False
-        elif event.key == globs.DOWN:
+        elif key == globs.DOWN:
             if self.selected == len(self.buttons) - 1:
                 self.selected = 0
             else:
                 self.selected += 1
             self.pressed = False
 
-        if event.key == globs.A:
+        if key == globs.A:
             self.pressed = True
 
-    def key_up_events(self, event):
-        if event.key == globs.A and self.pressed:
+    def key_up_events(self, key):
+        if key == globs.A and self.pressed:
             if self.selected == 0:
                 self.resume()
             elif self.selected == 1:
@@ -156,6 +156,7 @@ class PauseLevel(engine.Scene):
 
     def resume(self):
         self.del_stack(self.scene_stack_index)
+        self.append_stack(ResumeLevel)
 
     def tick(self):
         self.get_events()
@@ -178,3 +179,28 @@ class PauseLevel(engine.Scene):
                 engine.screen.blit(self.button_image[0], button_pos)
             text = globs.font.draw(self.buttons[i])
             engine.screen.blit(text, (button_pos[0] + 25 - int(text.get_width() / 2), button_pos[1] + 3))
+
+
+class ResumeLevel(engine.Scene):
+    def init(self):
+        pg.time.set_timer(pg.USEREVENT, 1000)
+        self.stack[0].draw()
+        self.background = engine.screen.copy()
+        self.countdown = 3
+
+    def unusual_event(self, event):
+        if event.type == pg.USEREVENT:
+            self.countdown -= 1
+
+    def tick(self):
+        self.get_events()
+
+        if (self.countdown == 0):
+            pg.time.set_timer(pg.USEREVENT, 0)
+            self.del_stack(self.scene_stack_index)
+
+    def draw(self):
+        engine.screen.blit(self.background, (0, 0))
+        pause_text = globs.font.draw(self.countdown)
+        engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
+
