@@ -192,6 +192,13 @@ class ResumeLevel(engine.Scene):
         if event.type == pg.USEREVENT:
             self.countdown -= 1
 
+    def key_down_events(self, key):
+        if key == globs.PAUSE:
+            self.del_stack(self.scene_stack_index)
+            self.append_stack(PauseLevel)
+        elif self.countdown <= 1:
+            self.stack[0].key_down_events(key)
+
     def tick(self):
         self.get_events()
 
