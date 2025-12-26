@@ -150,7 +150,7 @@ class PauseLevel(engine.Scene):
             if self.selected == 0:
                 self.resume()
             elif self.selected == 1:
-                self.replace_stack(Level)
+                self.replace_stack(type(self.stack[0]))
             elif self.selected == 2:
                 engine.running = False
 
