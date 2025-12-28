@@ -20,6 +20,7 @@ class Level(engine.Scene):
             self.game_map[5][x + 1] = x + 1
         self.game_map[5][14] = self.APPLE
         self.delta = 0
+        self.delta_reset = (3 - globs.difficulty)
         # rendering
         self.game_map_render = [row.copy() for row in self.game_map]
         self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
@@ -54,7 +55,7 @@ class Level(engine.Scene):
         if len(self.snake.dir) == 1:
             self.snake.dir.append(self.snake.dir[0])
 
-        if self.delta == 1:
+        if self.delta == self.delta_reset:
             self.snake.pos += self.snake.dir[1]
             int_pos_x = int(self.snake.pos.x)
             int_pos_y = int(self.snake.pos.y)
