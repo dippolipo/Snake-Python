@@ -116,7 +116,7 @@ class LevelGUI(engine.Scene):
 
 class PauseLevel(engine.Scene):
     def init(self):
-        buttons_names = ["RESUME", "RESET", "QUIT"]
+        buttons_names = ["RESUME", "RESET", "MENU"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.stack[0].draw()
         self.background = engine.screen.copy()
@@ -141,7 +141,7 @@ class PauseLevel(engine.Scene):
             elif self.buttons.selected == 1:
                 self.replace_stack(type(self.stack[0]))
             elif self.buttons.selected == 2:
-                engine.running = False
+                self.replace_stack(MainMenu)
 
     def resume(self):
         self.stack[0].pause = False
@@ -192,3 +192,36 @@ class ResumeLevel(engine.Scene):
         pause_text = globs.font.draw(self.countdown)
         engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
 
+
+class MainMenu(engine.Scene):
+    def init(self):
+        buttons_names = ["PLAY", "SPEED", "QUIT"]
+        self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
+        self.background = pg.Surface((384, 216))
+        self.background.fill(pg.Color("aquamarine"))
+
+    def tick(self):
+        self.get_events()
+
+    def key_down_events(self, key):
+        if key == globs.UP:
+            self.buttons.cursor_move(-1)
+        elif key == globs.DOWN:
+            self.buttons.cursor_move(+1)
+
+        if key == globs.A:
+            self.buttons.pressed = True
+
+    def key_up_events(self, key):
+        if key == globs.A and self.buttons.pressed:
+            if self.buttons.selected == 0:
+                self.replace_stack(Level)
+            elif self.buttons.selected == 1:
+                pass
+            elif self.buttons.selected == 2:
+                engine.running = False
+
+    def draw(self):
+        engine.screen.blit(self.background, (0, 0))
+        buttons_surface = self.buttons.print_vertically()
+        engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
