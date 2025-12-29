@@ -139,14 +139,13 @@ class PauseLevel(engine.Scene):
             if self.buttons.selected == 0:
                 self.resume()
             elif self.buttons.selected == 1:
-                self.replace_stack(type(self.stack[0]))
+                self.reset_stack(type(self.stack[0]))
             elif self.buttons.selected == 2:
-                self.replace_stack(MainMenu)
+                self.reset_stack(MainMenu)
 
     def resume(self):
         self.stack[0].pause = False
-        self.del_stack(self.scene_stack_index)
-        self.append_stack(ResumeLevel)
+        self.replace_stack(self.scene_stack_index, ResumeLevel)
 
     def tick(self):
         self.get_events()
@@ -169,7 +168,7 @@ class ResumeLevel(engine.Scene):
         self.background = engine.screen.copy()
         self.countdown = 3
 
-    def unusual_event(self, event):
+    def non_key_event(self, event):
         if event.type == pg.USEREVENT:
             self.countdown -= 1
 
@@ -183,7 +182,7 @@ class ResumeLevel(engine.Scene):
     def tick(self):
         self.get_events()
 
-        if (self.countdown == 0):
+        if self.countdown == 0:
             pg.time.set_timer(pg.USEREVENT, 0)
             self.del_stack(self.scene_stack_index)
 
@@ -215,7 +214,7 @@ class MainMenu(engine.Scene):
     def key_up_events(self, key):
         if key == globs.A and self.buttons.pressed:
             if self.buttons.selected == 0:
-                self.replace_stack(Level)
+                self.reset_stack(Level)
             elif self.buttons.selected == 1:
                 pass
             elif self.buttons.selected == 2:

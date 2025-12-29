@@ -12,6 +12,13 @@ running = True
 
 class Scene:
     stack = []
+    stack_update = False
+    stack_append = []
+    stack_insert = []
+    stack_reset = None
+    stack_delete = None
+    stack_replace = []
+
     def init(self):
         pass
 
@@ -27,7 +34,7 @@ class Scene:
         pass
 
 
-    def unusual_event(self, event):
+    def non_key_event(self, event):
         pass
 
 
@@ -45,7 +52,7 @@ class Scene:
                 case pg.QUIT:
                     running = False
                 case _:
-                    self.unusual_event(event)
+                    self.non_key_event(event)
 
 
     def tick(self):
@@ -73,22 +80,54 @@ class Scene:
             Scene.stack[index].tick()
 
     @staticmethod
-    def replace_stack(new_scene):
-        Scene.stack = []
-        Scene.append_stack(new_scene)
+    def stack_management():
+        if Scene.stack_update:
+            if Scene.stack_append:
+                Scene.stack.append(Scene.stack_append[0](len(Scene.stack)))
+                del Scene.stack_append[0]
+            if Scene.stack_delete != None:
+                for i in range(Scene.stack_delete, len(Scene.stack)):
+                    Scene.stack[i].scene_stack_index -= 1
+                del Scene.stack[Scene.stack_delete]
+                Scene.stack_delete = None
+            if Scene.stack_insert:
+                Scene.stack.insert(Scene.stack_insert[0][0], Scene.stack_insert[0][1])
+                del Scene.stack_insert[0]
+            if Scene.stack_replace:
+                Scene.stack[Scene.stack_replace[0][0]] = Scene.stack_replace[0][1](len(Scene.stack) - 1)
+                del Scene.stack_replace[0]
+            if Scene.stack_reset != None:
+                Scene.stack = []
+                Scene.stack.append(Scene.stack_reset(0))
+                Scene.stack_reset = None
+
+            if not (Scene.stack_append or Scene.stack_delete != None or Scene.stack_insert or Scene.stack_reset != None or Scene.stack_replace):
+                Scene.stack_update = False
+
+    @staticmethod
+    def reset_stack(new_scene):
+        Scene.stack_reset = new_scene
+        Scene.stack_update = True
 
     @staticmethod
     def del_stack(index):
-        for i in range(index, len(Scene.stack)):
-            Scene.stack[i].scene_stack_index -= 1
-        del Scene.stack[index]
+        Scene.stack_delete = (index)
+        Scene.stack_update = True
 
     @staticmethod
     def append_stack(new_scene):
-        Scene.stack.append(None)
-        stack_pos = len(Scene.stack) - 1
-        Scene.stack[stack_pos] = new_scene(stack_pos)
+        Scene.stack_append.append(new_scene)
+        Scene.stack_update = True
 
+    @staticmethod
+    def insert_stack(index, new_scene):
+        Scene.stack_insert.append((index, new_scene))
+        Scene.stack_update = True
+
+    @staticmethod
+    def replace_stack(index, new_scene):
+        Scene.stack_replace.append((index, new_scene))
+        Scene.stack_update = True
 
 class Game:
 
@@ -98,6 +137,7 @@ class Game:
     def loop(self):
 
         while running:
+            Scene.stack_management()
             Scene.stack[-1].tick()
             Scene.stack[-1].draw()
             pg.display.flip()
