@@ -24,7 +24,7 @@ class Level(engine.Scene):
         # rendering
         self.game_map_render = [row.copy() for row in self.game_map]
         self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
-        self.append_stack(LevelGUI)
+        self.insert_stack(self.scene_stack_index + 1, LevelGUI)
 
 
     def key_down_events(self, key):
@@ -198,6 +198,7 @@ class MainMenu(engine.Scene):
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = pg.Surface((384, 216))
         self.background.fill(pg.Color("aquamarine"))
+        self.insert_stack(0, Level)
 
     def tick(self):
         self.get_events()
@@ -221,6 +222,7 @@ class MainMenu(engine.Scene):
                 engine.running = False
 
     def draw(self):
-        engine.screen.blit(self.background, (0, 0))
+        if self.scene_stack_index != 0:
+            self.stack[0].draw()
         buttons_surface = self.buttons.print_vertically()
         engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))

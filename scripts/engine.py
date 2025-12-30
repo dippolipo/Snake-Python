@@ -91,7 +91,10 @@ class Scene:
                 del Scene.stack[Scene.stack_delete]
                 Scene.stack_delete = None
             if Scene.stack_insert:
+                for i in range(Scene.stack_insert[0][0], len(Scene.stack)):
+                    Scene.stack[i].scene_stack_index += 1
                 Scene.stack.insert(Scene.stack_insert[0][0], Scene.stack_insert[0][1])
+                Scene.stack[Scene.stack_insert[0][0]] = Scene.stack[Scene.stack_insert[0][0]](Scene.stack_insert[0][0])
                 del Scene.stack_insert[0]
             if Scene.stack_replace:
                 Scene.stack[Scene.stack_replace[0][0]] = Scene.stack_replace[0][1](len(Scene.stack) - 1)
@@ -103,6 +106,7 @@ class Scene:
 
             if not (Scene.stack_append or Scene.stack_delete != None or Scene.stack_insert or Scene.stack_reset != None or Scene.stack_replace):
                 Scene.stack_update = False
+            print(Scene.stack)
 
     @staticmethod
     def reset_stack(new_scene):
