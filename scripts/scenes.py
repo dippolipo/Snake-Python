@@ -1,3 +1,5 @@
+from pygame.display import toggle_fullscreen
+
 from scripts import engine, globs, entities
 import pygame as pg
 from pygame import Vector2
@@ -119,6 +121,8 @@ class PauseLevel(engine.Scene):
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.stack[0].draw()
         self.background = engine.screen.copy()
+        self.pause_text = globs.font.draw("MENU")
+        self.pause_text_des = (192 - int(self.pause_text.get_width() / 2), 3)
 
 
     def key_down_events(self, key):
@@ -153,8 +157,7 @@ class PauseLevel(engine.Scene):
     def draw(self):
         engine.screen.blit(self.background, (0, 0))
 
-        pause_text = globs.font.draw("MENU")
-        engine.screen.blit(pause_text, (192 - int(pause_text.get_width() / 2), 3))
+        engine.screen.blit(self.pause_text, self.pause_text_des)
 
         buttons_surface = self.buttons.print_vertically()
         engine.screen.blit(buttons_surface, (384/2-self.buttons.size[0]/2, 216/2 - self.buttons.size[1]/2))
@@ -193,9 +196,17 @@ class ResumeLevel(engine.Scene):
 
 class MainMenu(engine.Scene):
     def init(self):
-        buttons_names = ["PLAY", "SPEED", "QUIT"]
+        buttons_names = ["START", "SPEED", "QUIT"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = pg.Surface((384, 216))
+        play_text = globs.font.draw("PLAY")
+        snake_text = globs.font.draw("SNAKE")
+        grid = [[20, 9, 9, 9, 9, 19], [11, 3, 2, 3, 2, 8], [18, 10, 10, 10, 10, 17]]
+        self.menu_overlay = pg.Surface((16*6, 16*5), pg.SRCALPHA)
+        self.menu_overlay.fill(pg.Color(0, 0, 0, 0))
+        self.menu_overlay.blit(play_text, (16*3 - int(play_text.get_width() / 2), 3))
+        self.menu_overlay.blit(engine.draw_tilemap(globs.tileset, grid), (0, 16*2))
+        self.menu_overlay.blit(snake_text, (16*3 - int(snake_text.get_width() / 2), 51))
         self.insert_stack(0, Level)
 
     def tick(self):
@@ -224,7 +235,7 @@ class MainMenu(engine.Scene):
             self.stack[0].draw()
         buttons_surface = self.buttons.print_vertically()
         engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
-
+        engine.screen.blit(self.menu_overlay, (16*9, 0))
 
 class SpeedMenu(engine.Scene):
     def init(self):
@@ -268,13 +279,18 @@ class EndLevel(engine.Scene):
         buttons_names = ["RETRY", "MENU", "QUIT"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = engine.screen.copy()
-        if self.stack[0].score > globs.highscore[globs.difficulty]:
+
+        def print_text_to_background(text):
             grid = [[20, 9, 9, 9, 9, 9, 9, 19], [11, 3, 2, 3, 2, 3, 2, 8], [18, 10, 10, 10, 10, 10, 10, 17]]
             text_background = engine.draw_tilemap(globs.tileset, grid)
-            text = globs.font.draw("NEW HIGHSCORE")
+            text_to_print = globs.font.draw(text)
             self.background.blit(text_background, (192 - 64, 32))
-            self.background.blit(text, (192 - int(text.get_width() / 2), 51))
+            self.background.blit(text_to_print, (192 - int(text_to_print.get_width() / 2), 51))
 
+        if self.stack[0].score > globs.highscore[globs.difficulty]:
+            print_text_to_background("NEW HIGHSCORE")
+        if self.stack[0].MAP_WIDTH * self.stack[0].MAP_HEIGHT - self.stack[0].snake.length == 0:
+            print_text_to_background("CONGRATULATIONS")
 
     def key_down_events(self, key):
         if key == globs.PAUSE:

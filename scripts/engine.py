@@ -136,9 +136,11 @@ class Scene:
 
 class Game:
 
-    def __init__(self, max_fps):
+    def __init__(self, max_fps, fullscreen):
         self.max_fps = max_fps
         self.clock = pg.time.Clock()
+        if fullscreen:
+            pg.display.toggle_fullscreen()
     def loop(self):
 
         while running:
