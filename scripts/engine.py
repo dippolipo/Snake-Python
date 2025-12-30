@@ -133,6 +133,7 @@ class Scene:
         Scene.stack_replace.append((index, new_scene))
         Scene.stack_update = True
 
+
 class Game:
 
     def __init__(self, max_fps):
@@ -169,7 +170,8 @@ class FontPNG:
         self.char_size = [int(n) for n in content[0].split("x")]
         self.line_spacing = int(content[2])
         self.char_spacing = int(content[3])
-        self.dict[" "] = pg.Surface((int(content[1]) - self.char_spacing * 2, self.char_size[1]), pg.SRCALPHA).fill(pg.Color(255, 255, 255, 0))
+        self.dict[" "] = pg.Surface((int(content[1]) - self.char_spacing * 2, self.char_size[1]), pg.SRCALPHA)
+        self.dict[" "].fill(pg.Color(255, 255, 255, 0))
         chars_horizontal = int((image.get_width() - 1) / (self.char_size[0] + 1)) # 1 pixel space between each letter
         chars_vertical = int((image.get_height() - 1) / (self.char_size[1] + 1))  # 1 pixel space between each letter
         char_i = 0
