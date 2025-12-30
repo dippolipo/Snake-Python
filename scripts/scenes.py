@@ -51,7 +51,7 @@ class Level(engine.Scene):
         if self.pause:
             return
 
-        # movement TODO: implement different speeds
+        # movement
         if len(self.snake.dir) == 1:
             self.snake.dir.append(self.snake.dir[0])
 
@@ -62,8 +62,7 @@ class Level(engine.Scene):
 
             if int_pos_x < 0 or int_pos_x >= self.MAP_WIDTH or int_pos_y < 0 or int_pos_y >= self.MAP_HEIGHT or (
                     self.game_map[int_pos_y][int_pos_x] != 0 and self.game_map[int_pos_y][int_pos_x] < self.MAP_WIDTH * self.MAP_HEIGHT):
-                print("STOP")  # TODO: change room
-                self.snake.speed = 0
+                self.append_stack(EndLevel)
             else:
                 if self.game_map[int_pos_y][int_pos_x] == self.APPLE:
                     self.score += 1
@@ -226,3 +225,45 @@ class MainMenu(engine.Scene):
             self.stack[0].draw()
         buttons_surface = self.buttons.print_vertically()
         engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
+
+
+class EndLevel(engine.Scene):
+    def init(self):
+        buttons_names = ["RETRY", "MENU", "QUIT"]
+        self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
+        self.background = engine.screen.copy()
+        if self.stack[0].score > globs.highscore[globs.difficulty]:
+            text = globs.font.draw("NEW HIGHSCORE")
+            self.background.blit(text, (192 - int(text.get_width() / 2), 48))
+
+
+    def key_down_events(self, key):
+        if key == globs.PAUSE:
+            self.resume()
+
+        if key == globs.UP:
+            self.buttons.cursor_move(-1)
+        elif key == globs.DOWN:
+            self.buttons.cursor_move(+1)
+
+        if key == globs.A:
+            self.buttons.pressed = True
+
+    def key_up_events(self, key):
+        if key == globs.A and self.buttons.pressed:
+            if self.buttons.selected == 0:
+                self.reset_stack(Level)
+            elif self.buttons.selected == 1:
+                self.reset_stack(MainMenu)
+            elif self.buttons.selected == 2:
+                engine.running = False
+
+    def tick(self):
+        self.get_events()
+
+
+    def draw(self):
+        engine.screen.blit(self.background, (0, 0))
+
+        buttons_surface = self.buttons.print_vertically()
+        engine.screen.blit(buttons_surface, (384/2-self.buttons.size[0]/2, 216/2 - self.buttons.size[1]/2))

@@ -10,4 +10,4 @@ font =  engine.FontPNG(r"data/Font")
 UP, DOWN, LEFT, RIGHT, A, B, C, PAUSE= pg.K_w, pg.K_s, pg.K_a, pg.K_d, pg.K_j, pg.K_i, pg.K_o, pg.K_ESCAPE
 difficulty = 2
 fullscreen = True# from 0 to 2
-highscore = [50, 40, 30]
+highscore = [50, 40, 0]
