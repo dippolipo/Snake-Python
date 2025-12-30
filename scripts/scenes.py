@@ -196,7 +196,6 @@ class MainMenu(engine.Scene):
         buttons_names = ["PLAY", "SPEED", "QUIT"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = pg.Surface((384, 216))
-        self.background.fill(pg.Color("aquamarine"))
         self.insert_stack(0, Level)
 
     def tick(self):
@@ -216,9 +215,46 @@ class MainMenu(engine.Scene):
             if self.buttons.selected == 0:
                 self.reset_stack(Level)
             elif self.buttons.selected == 1:
-                pass
+                self.append_stack(SpeedMenu)
             elif self.buttons.selected == 2:
                 engine.running = False
+
+    def draw(self):
+        if self.scene_stack_index != 0:
+            self.stack[0].draw()
+        buttons_surface = self.buttons.print_vertically()
+        engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
+
+
+class SpeedMenu(engine.Scene):
+    def init(self):
+        buttons_names = ["EASY", "MEDIUM", "HARD"]
+        self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
+        self.background = pg.Surface((384, 216))
+        self.background.fill(pg.Color("aquamarine"))
+        self.insert_stack(0, Level)
+
+    def tick(self):
+        self.get_events()
+
+    def key_down_events(self, key):
+        if key == globs.UP:
+            self.buttons.cursor_move(-1)
+        elif key == globs.DOWN:
+            self.buttons.cursor_move(+1)
+
+        if key == globs.A:
+            self.buttons.pressed = True
+
+    def key_up_events(self, key):
+        if key == globs.A and self.buttons.pressed:
+            if self.buttons.selected == 0:
+                globs.difficulty = 0
+            elif self.buttons.selected == 1:
+                globs.difficulty = 1
+            elif self.buttons.selected == 2:
+                globs.difficulty = 2
+            self.del_stack(self.scene_stack_index)
 
     def draw(self):
         if self.scene_stack_index != 0:
@@ -233,8 +269,11 @@ class EndLevel(engine.Scene):
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = engine.screen.copy()
         if self.stack[0].score > globs.highscore[globs.difficulty]:
+            grid = [[20, 9, 9, 9, 9, 9, 9, 19], [11, 3, 2, 3, 2, 3, 2, 8], [18, 10, 10, 10, 10, 10, 10, 17]]
+            text_background = engine.draw_tilemap(globs.tileset, grid)
             text = globs.font.draw("NEW HIGHSCORE")
-            self.background.blit(text, (192 - int(text.get_width() / 2), 48))
+            self.background.blit(text_background, (192 - 64, 32))
+            self.background.blit(text, (192 - int(text.get_width() / 2), 51))
 
 
     def key_down_events(self, key):
