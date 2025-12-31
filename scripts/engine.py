@@ -137,6 +137,7 @@ class Scene:
 class Game:
 
     def __init__(self, max_fps, fullscreen):
+        pg.mouse.set_visible(False)
         self.max_fps = max_fps
         self.clock = pg.time.Clock()
         if fullscreen:
