@@ -3,6 +3,7 @@ from operator import truediv
 import pygame
 import pygame as pg
 import random
+import copy
 
 from pygame.display import toggle_fullscreen
 
@@ -260,6 +261,61 @@ class ButtonArray:
         return canvas
 
 
+class Grid:
+    def __init__(self, grid):
+        self.grid = grid
+
+    def get(self, dest):
+        if type(dest) == pg.Vector2:
+            return self.grid[int(dest.y)][int(dest.x)]
+        else:
+            return self.grid[dest[1]][dest[0]]
+
+    def set_at(self, dest, value):
+        if type(dest) == pg.Vector2:
+            self.grid[int(dest.y)][int(dest.x)] = value
+        else:
+            self.grid[dest[1]][dest[0]] = value
+
+    def add_at(self, dest, value):
+        if type(dest) == pg.Vector2:
+            self.grid[int(dest.y)][int(dest.x)] += value
+        else:
+            self.grid[dest[1]][dest[0]] += value
+
+    def get_width(self):
+        return len(self.grid[0])
+
+    def get_height(self):
+        return len(self.grid)
+
+    def inside_boundaries(self, dest):
+        if dest.x >= 0 and dest.x < self.get_width() and dest.y >= 0 and dest.y < self.get_height():
+            return True
+        else:
+            return False
+
+    def random_cell_replace(self, starting_value, final_value):
+        positions = []
+        for y, row in enumerate(self.grid):
+            for x, cell in enumerate(row):
+                if cell == starting_value:
+                    positions.append([x, y])
+
+        if not positions:
+            return False
+        final_xy = random.choice(positions)
+        self.grid[final_xy[1]][final_xy[0]] = final_value
+        return True
+
+    def copy(self):
+        return Grid([row[:] for row in self.grid])
+
+    def cells(self):
+        for y, row in enumerate(self.grid):
+            for x, cell in enumerate(row):
+                yield x, y, cell
+
 def pygame_init(name, icon, screen_size): # TODO
     global screen
     pg.init()
@@ -282,6 +338,8 @@ def load_tileset(tileset_image, tile_size):
 
 
 def draw_tilemap(single_tiles, grid, background_color=pg.Color(255, 255, 255, 0)):
+    if isinstance(grid, Grid):
+        grid = grid.grid
     tile_size = single_tiles[0].get_width()
     grid_size = (len(grid[0]), len(grid))
     final_canvas = pg.Surface((grid_size[0] * tile_size, grid_size[1] * tile_size)).convert_alpha()
@@ -308,15 +366,4 @@ def load_tilemap(file_path):  # file_path needs to be raw
             line = line[:-1]
         line = [int(n) for n in line.split(",")]
         grid.append(line)
-    return grid
-
-
-def random_cell_replace(grid, starting_value, final_value):
-    positions = []
-    for y, row in enumerate(grid):
-        for x, cell in enumerate(row):
-            if cell == starting_value:
-                positions.append([x, y])
-    final_xy = random.choice(positions)
-    grid[final_xy[1]][final_xy[0]] = final_value
     return grid

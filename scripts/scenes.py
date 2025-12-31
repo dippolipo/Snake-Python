@@ -16,21 +16,22 @@ class Level(engine.Scene):
         self.pause = False
         self.snake = entities.Snake((3, 5), 3, (1, 0))
         self.delta = 0
-        self.game_map = [[0 for i in range(self.MAP_WIDTH)] for j in range(self.MAP_HEIGHT)]
+        self.game_map = engine.Grid([[0 for i in range(self.MAP_WIDTH)] for j in range(self.MAP_HEIGHT)])
         self.score = 0
         for x in range(self.snake.length):
-            self.game_map[5][x + 1] = x + 1
-        self.game_map[5][14] = self.APPLE
+            self.game_map.set_at((x + 1, 5), x + 1)
+
+        self.game_map.set_at((14, 5), self.APPLE)
         if globs.apples >= 1:
-            self.game_map[7][12] = self.APPLE
-            self.game_map[3][12] = self.APPLE
+            self.game_map.set_at((12, 7), self.APPLE)
+            self.game_map.set_at((12, 3), self.APPLE)
         if globs.apples == 2:
-            self.game_map[9][10] = self.APPLE
-            self.game_map[1][10] = self.APPLE
+            self.game_map.set_at((10, 9), self.APPLE)
+            self.game_map.set_at((10, 1), self.APPLE)
         self.delta = 0
         self.delta_reset = (3 - globs.difficulty)
         # rendering
-        self.game_map_render = [row.copy() for row in self.game_map]
+        self.game_map_render = self.game_map.copy()
         self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
         self.insert_stack(self.scene_stack_index + 1, LevelGUI)
 
@@ -65,23 +66,22 @@ class Level(engine.Scene):
 
         if self.delta == self.delta_reset:
             self.snake.pos += self.snake.dir[1]
-            int_pos_x = int(self.snake.pos.x)
-            int_pos_y = int(self.snake.pos.y)
+            pos_x = int(self.snake.pos.x)
+            pos_y = int(self.snake.pos.y)
 
-            if int_pos_x < 0 or int_pos_x >= self.MAP_WIDTH or int_pos_y < 0 or int_pos_y >= self.MAP_HEIGHT or (
-                    self.game_map[int_pos_y][int_pos_x] != 0 and self.game_map[int_pos_y][int_pos_x] < self.MAP_WIDTH * self.MAP_HEIGHT):
+            if pos_x < 0 or pos_x >= self.MAP_WIDTH or pos_y < 0 or pos_y >= self.MAP_HEIGHT or (
+                    self.game_map.get((pos_x, pos_y)) != 0 and self.game_map.get((pos_x, pos_y)) < self.MAP_WIDTH * self.MAP_HEIGHT):
                 self.append_stack(EndLevel)
             else:
-                if self.game_map[int_pos_y][int_pos_x] == self.APPLE:
+                if self.game_map.get((pos_x, pos_y)) == self.APPLE:
                     self.score += 1
                     self.snake.length += 1
-                    self.game_map = engine.random_cell_replace(self.game_map, 0, self.APPLE)
+                    self.game_map.random_cell_replace(0, self.APPLE)
                 else:
-                    for y in range(len(self.game_map)):
-                        for x in range(len(self.game_map[0])):
-                            if self.game_map[y][x] != 0 and self.game_map[y][x] < self.MAP_WIDTH * self.MAP_HEIGHT:
-                                self.game_map[y][x] -= 1
-                self.game_map[int_pos_y][int_pos_x] = self.snake.length
+                    for x, y, cell in self.game_map.cells():
+                        if cell != 0 and cell < self.MAP_WIDTH * self.MAP_HEIGHT:
+                            self.game_map.add_at((x, y), -1)
+                self.game_map.set_at(self.snake.pos, self.snake.length)
             self.snake.dir.pop(0)
             self.delta = 0
         elif self.snake.speed != 0:
@@ -91,18 +91,17 @@ class Level(engine.Scene):
     def draw(self):
         engine.screen.blit(self.background, [0, 0])
 
-        for y, row in enumerate(self.game_map_render):
-            for x, cell in enumerate(row):
-
-                if self.game_map[y][x] == self.APPLE:
-                    self.game_map_render[y][x] = 1
-                elif cell != 0 and self.game_map[y][x] == 0:
-                    self.game_map_render[y][x] = 0
-                elif self.game_map[y][x] <= self.MAP_WIDTH * self.MAP_HEIGHT and self.game_map[y][x] != 0:
-                    self.game_map_render[y][x] = 24
+        for x, y, cell in self.game_map.cells():
+            if cell == self.APPLE:
+                self.game_map_render.set_at((x, y), 1)
+            elif cell != 0 and cell == 0:
+                self.game_map_render.set_at((x, y), 0)
+            elif cell <= self.MAP_WIDTH * self.MAP_HEIGHT and cell != 0:
+                self.game_map_render.set_at((x, y), 24)
+            else:
+                self.game_map_render.set_at((x, y), 0)
 
         snake_body = engine.draw_tilemap(globs.entities_tiles, self.game_map_render)
-
         engine.screen.blit(snake_body, (48, 16))
 
 
