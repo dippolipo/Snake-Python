@@ -265,7 +265,7 @@ def pygame_init(name, icon, screen_size): # TODO
     pg.init()
     pg.display.set_icon(pg.image.load(icon))
     pg.display.set_caption(name)
-    screen = pg.display.set_mode((384, 216), pg.SCALED)
+    screen = pg.display.set_mode(screen_size, pg.SCALED)
 
 
 def load_tileset(tileset_image, tile_size):
