@@ -21,6 +21,12 @@ class Level(engine.Scene):
         for x in range(self.snake.length):
             self.game_map[5][x + 1] = x + 1
         self.game_map[5][14] = self.APPLE
+        if globs.apples >= 1:
+            self.game_map[7][12] = self.APPLE
+            self.game_map[3][12] = self.APPLE
+        if globs.apples == 2:
+            self.game_map[9][10] = self.APPLE
+            self.game_map[1][10] = self.APPLE
         self.delta = 0
         self.delta_reset = (3 - globs.difficulty)
         # rendering
@@ -104,7 +110,7 @@ class LevelGUI(engine.Scene):
     def init(self):
         self.static_gui = pg.Surface((384, 216), pg.SRCALPHA)
         self.static_gui.fill(pg.Color(255, 255, 255, 0))
-        self.static_gui.blit(globs.font.draw(f"TOP:\n{globs.highscore[globs.difficulty]}\n"), (0, 0))
+        self.static_gui.blit(globs.font.draw(f"TOP:\n{globs.highscore[globs.difficulty][globs.apples]}\n"), (0, 0))
     def tick(self):
         self.tick_stack(0)
 
@@ -196,8 +202,12 @@ class ResumeLevel(engine.Scene):
 
 class MainMenu(engine.Scene):
     def init(self):
-        buttons_names = ["START", "SPEED", "QUIT"]
+        # scene stack
+        self.insert_stack(0, Level)
+        # logic
+        buttons_names = ["START", "SPEED", "APPLES", "QUIT"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
+        # rendering
         self.background = pg.Surface((384, 216))
         play_text = globs.font.draw("PLAY")
         snake_text = globs.font.draw("SNAKE")
@@ -207,7 +217,8 @@ class MainMenu(engine.Scene):
         self.menu_overlay.blit(play_text, (16*3 - int(play_text.get_width() / 2), 3))
         self.menu_overlay.blit(engine.draw_tilemap(globs.tileset, grid), (0, 16*2))
         self.menu_overlay.blit(snake_text, (16*3 - int(snake_text.get_width() / 2), 51))
-        self.insert_stack(0, Level)
+        self.level_apples = globs.apples
+        globs.apples = 0
 
     def tick(self):
         self.get_events()
@@ -217,17 +228,20 @@ class MainMenu(engine.Scene):
             self.buttons.cursor_move(-1)
         elif key == globs.DOWN:
             self.buttons.cursor_move(+1)
-
         if key == globs.A:
             self.buttons.pressed = True
 
     def key_up_events(self, key):
         if key == globs.A and self.buttons.pressed:
             if self.buttons.selected == 0:
+                globs.apples = self.level_apples
+                print(globs.apples)
                 self.reset_stack(Level)
             elif self.buttons.selected == 1:
                 self.append_stack(SpeedMenu)
             elif self.buttons.selected == 2:
+                self.append_stack(AppleMenu)
+            elif self.buttons.selected == 3:
                 engine.running = False
 
     def draw(self):
@@ -237,13 +251,13 @@ class MainMenu(engine.Scene):
         engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
         engine.screen.blit(self.menu_overlay, (16*9, 0))
 
+
 class SpeedMenu(engine.Scene):
     def init(self):
         buttons_names = ["EASY", "MEDIUM", "HARD"]
         self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
         self.background = pg.Surface((384, 216))
         self.background.fill(pg.Color("aquamarine"))
-        self.insert_stack(0, Level)
 
     def tick(self):
         self.get_events()
@@ -268,10 +282,47 @@ class SpeedMenu(engine.Scene):
             self.del_stack(self.scene_stack_index)
 
     def draw(self):
-        if self.scene_stack_index != 0:
-            self.stack[0].draw()
+        self.stack[0].draw()
         buttons_surface = self.buttons.print_vertically()
         engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
+        engine.screen.blit(self.stack[self.scene_stack_index - 1].menu_overlay, (16*9, 0))
+
+
+class AppleMenu(engine.Scene):
+    def init(self):
+        buttons_names = ["ONE", "A FEW", "MANY"]
+        self.buttons = engine.ButtonArray(r"data/Button.png", buttons_names, globs.font, 8)
+        self.background = pg.Surface((384, 216))
+        self.background.fill(pg.Color("aquamarine"))
+
+    def tick(self):
+        self.get_events()
+
+    def key_down_events(self, key):
+        if key == globs.UP:
+            self.buttons.cursor_move(-1)
+        elif key == globs.DOWN:
+            self.buttons.cursor_move(+1)
+
+        if key == globs.A:
+            self.buttons.pressed = True
+
+    def key_up_events(self, key):
+        if key == globs.A and self.buttons.pressed:
+            if self.buttons.selected == 0:
+                self.stack[self.scene_stack_index - 1].level_apples = 0
+            elif self.buttons.selected == 1:
+                self.stack[self.scene_stack_index - 1].level_apples = 1
+            elif self.buttons.selected == 2:
+                self.stack[self.scene_stack_index - 1].level_apples = 2
+            print(self.stack[self.scene_stack_index - 1].level_apples)
+            self.del_stack(self.scene_stack_index)
+
+    def draw(self):
+        self.stack[0].draw()
+        buttons_surface = self.buttons.print_vertically()
+        engine.screen.blit(buttons_surface, (384 / 2 - self.buttons.size[0] / 2, 216 / 2 - self.buttons.size[1] / 2))
+        engine.screen.blit(self.stack[self.scene_stack_index - 1].menu_overlay, (16*9, 0))
 
 
 class EndLevel(engine.Scene):
@@ -287,8 +338,9 @@ class EndLevel(engine.Scene):
             self.background.blit(text_background, (192 - 64, 32))
             self.background.blit(text_to_print, (192 - int(text_to_print.get_width() / 2), 51))
 
-        if self.stack[0].score > globs.highscore[globs.difficulty]:
+        if self.stack[0].score > globs.highscore[globs.difficulty][globs.apples]:
             print_text_to_background("NEW HIGHSCORE")
+            globs.highscore[globs.difficulty][globs.apples] = self.stack[0].score
         if self.stack[0].MAP_WIDTH * self.stack[0].MAP_HEIGHT - self.stack[0].snake.length == 0:
             print_text_to_background("CONGRATULATIONS")
 
