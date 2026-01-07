@@ -32,7 +32,12 @@ class Level(engine.Scene):
         self.delta_reset = (3 - globs.difficulty)
         # rendering
         self.game_map_render = self.game_map.copy()
-        self.background = engine.draw_tilemap(globs.tileset, engine.load_tilemap(r"./data/Map.txt"))
+        tilemap = engine.Tilemap()
+        tilemap.set_tileset(globs.tileset)
+        tilemap.load_grid(r"./data/Map.txt")
+        self.background = tilemap.print()
+        self.snake_body = engine.Tilemap()
+        self.snake_body.set_tileset(globs.entities_tiles)
         self.insert_stack(self.scene_stack_index + 1, LevelGUI)
 
 
@@ -101,8 +106,8 @@ class Level(engine.Scene):
             else:
                 self.game_map_render.set_at((x, y), 0)
 
-        snake_body = engine.draw_tilemap(globs.entities_tiles, self.game_map_render)
-        engine.screen.blit(snake_body, (48, 16))
+        self.snake_body.set_grid(self.game_map_render)
+        engine.screen.blit(self.snake_body.print(), (48, 16))
 
 
 class LevelGUI(engine.Scene):
@@ -214,7 +219,10 @@ class MainMenu(engine.Scene):
         self.menu_overlay = pg.Surface((16*6, 16*5), pg.SRCALPHA)
         self.menu_overlay.fill(pg.Color(0, 0, 0, 0))
         self.menu_overlay.blit(play_text, (16*3 - int(play_text.get_width() / 2), 3))
-        self.menu_overlay.blit(engine.draw_tilemap(globs.tileset, grid), (0, 16*2))
+        menu_overlay_tilemap = engine.Tilemap()
+        menu_overlay_tilemap.set_grid(grid)
+        menu_overlay_tilemap.set_tileset(globs.tileset)
+        self.menu_overlay.blit(menu_overlay_tilemap.print(), (0, 16*2))
         self.menu_overlay.blit(snake_text, (16*3 - int(snake_text.get_width() / 2), 51))
         self.level_apples = globs.apples
         globs.apples = 0
@@ -332,9 +340,11 @@ class EndLevel(engine.Scene):
 
         def print_text_to_background(text):
             grid = [[20, 9, 9, 9, 9, 9, 9, 19], [11, 3, 2, 3, 2, 3, 2, 8], [18, 10, 10, 10, 10, 10, 10, 17]]
-            text_background = engine.draw_tilemap(globs.tileset, grid)
+            text_background = engine.Tilemap()
+            text_background.set_grid(grid)
+            text_background.set_tileset(globs.tileset)
             text_to_print = globs.font.draw(text)
-            self.background.blit(text_background, (192 - 64, 32))
+            self.background.blit(text_background.print(), (192 - 64, 32))
             self.background.blit(text_to_print, (192 - int(text_to_print.get_width() / 2), 51))
 
         if self.stack[0].score > globs.highscore[globs.difficulty][globs.apples]:

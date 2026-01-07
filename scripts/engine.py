@@ -316,6 +316,46 @@ class Grid:
             for x, cell in enumerate(row):
                 yield x, y, cell
 
+
+class Tilemap:
+    def __init__(self):
+        self.grid = []
+        self.tiles_array = []
+
+    def load_grid(self, file_path):  # file_path needs to be raw
+        # file transcription
+        with open(file_path) as file:
+            content = file.readlines()
+
+        # file processing
+        self.grid = []
+        for i, line in enumerate(content[1:]):
+            line = line.strip()
+            if line[-1] == ",":
+                line = line[:-1]
+            line = [int(n) for n in line.split(",")]
+            self.grid.append(line)
+
+    def set_grid(self, grid):
+        if isinstance(grid, Grid):
+            grid = grid.grid
+        self.grid = grid
+
+    def set_tileset(self, tileset):
+        self.tiles_array = tileset
+
+    def print(self, background_color=pg.Color(255, 255, 255, 0)):
+        tile_size = self.tiles_array[0].get_width()
+        grid_size = (len(self.grid[0]), len(self.grid))
+        final_canvas = pg.Surface((grid_size[0] * tile_size, grid_size[1] * tile_size)).convert_alpha()
+        final_canvas.fill(background_color)
+
+        for i, row in enumerate(self.grid):
+            for j, tile_id in enumerate(row):
+                final_canvas.blit(self.tiles_array[tile_id], (j * tile_size, i * tile_size))
+
+        return final_canvas
+
 def pygame_init(name, icon, screen_size): # TODO
     global screen
     pg.init()
@@ -335,35 +375,3 @@ def load_tileset(tileset_image, tile_size):
             single_tiles.append(tileset_image.subsurface(pg.Rect(j * tile_size, i * tile_size, tile_size, tile_size)))
 
     return single_tiles
-
-
-def draw_tilemap(single_tiles, grid, background_color=pg.Color(255, 255, 255, 0)):
-    if isinstance(grid, Grid):
-        grid = grid.grid
-    tile_size = single_tiles[0].get_width()
-    grid_size = (len(grid[0]), len(grid))
-    final_canvas = pg.Surface((grid_size[0] * tile_size, grid_size[1] * tile_size)).convert_alpha()
-    final_canvas.fill(background_color)
-
-    for i, row in enumerate(grid):
-        for j, tile_id in enumerate(row):
-            final_canvas.blit(single_tiles[tile_id], (j * tile_size, i * tile_size))
-
-    return final_canvas
-
-
-def load_tilemap(file_path):  # file_path needs to be raw
-
-    # file transcription
-    with open(file_path) as file:
-        content = file.readlines()
-
-    # file processing
-    grid = []
-    for i, line in enumerate(content[1:]):
-        line = line.strip()
-        if line[-1] == ",":
-            line = line[:-1]
-        line = [int(n) for n in line.split(",")]
-        grid.append(line)
-    return grid
