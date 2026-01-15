@@ -12,7 +12,6 @@ screen = None
 running = True
 
 class Scene:
-    stack = []
     stack_update = False
     stack_append = []
     stack_insert = []
@@ -20,12 +19,16 @@ class Scene:
     stack_delete = None
     stack_replace = []
 
-    def init(self):
-        pass
+    def __init__(self):
+        self.visible = True
+        self.active = True
 
-    def __init__(self, scene_stack_index):
-        self.scene_stack_index = scene_stack_index
-        self.init()
+
+    def set_visible(self, value):
+        self.visible = value
+
+    def set_active(self, value):
+        self.active = value
 
     def key_down_events(self, key):
         pass
@@ -57,82 +60,67 @@ class Scene:
 
 
     def tick(self):
-        print("tick not done")
-        pg.quit()
-
-
-    def draw(self):
-        print("render_frame not done")
-        pg.quit()
-
-    # stack manager
-    def permit_scene_stack(self):
-        if self.scene_stack_index == 0 or self.scene_stack_index == len(Scene.stack) - 1:
+        if self.active:
             return True
         else:
             return False
 
-    def draw_stack(self, index):
-        if self.permit_scene_stack():
-            Scene.stack[index].draw()
 
-    def tick_stack(self, index):
-        if self.permit_scene_stack():
-            Scene.stack[index].tick()
+    def draw(self):
+        if self.visible:
+            return True
+        else:
+            return False
 
-    @staticmethod
-    def stack_management():
-        if Scene.stack_update:
-            if Scene.stack_append:
-                Scene.stack.append(Scene.stack_append[0](len(Scene.stack)))
-                del Scene.stack_append[0]
-            if Scene.stack_delete != None:
-                for i in range(Scene.stack_delete, len(Scene.stack)):
-                    Scene.stack[i].scene_stack_index -= 1
-                del Scene.stack[Scene.stack_delete]
-                Scene.stack_delete = None
-            if Scene.stack_insert:
-                for i in range(Scene.stack_insert[0][0], len(Scene.stack)):
-                    Scene.stack[i].scene_stack_index += 1
-                Scene.stack.insert(Scene.stack_insert[0][0], Scene.stack_insert[0][1])
-                Scene.stack[Scene.stack_insert[0][0]] = Scene.stack[Scene.stack_insert[0][0]](Scene.stack_insert[0][0])
-                del Scene.stack_insert[0]
-            if Scene.stack_replace:
-                Scene.stack[Scene.stack_replace[0][0]] = Scene.stack_replace[0][1](len(Scene.stack) - 1)
-                del Scene.stack_replace[0]
-            if Scene.stack_reset != None:
-                Scene.stack = []
-                Scene.stack.append(Scene.stack_reset(0))
-                Scene.stack_reset = None
 
-            if not (Scene.stack_append or Scene.stack_delete != None or Scene.stack_insert or Scene.stack_reset != None or Scene.stack_replace):
-                Scene.stack_update = False
-            print(Scene.stack)
+
+class SceneManager:
+    scene_dict = dict()
+    main_scene = None
 
     @staticmethod
-    def reset_stack(new_scene):
-        Scene.stack_reset = new_scene
-        Scene.stack_update = True
+    def draw(scene = None):
+
+        if scene is None:
+            scene = SceneManager.main_scene
+        SceneManager.scene_dict[scene].draw()
 
     @staticmethod
-    def del_stack(index):
-        Scene.stack_delete = (index)
-        Scene.stack_update = True
+    def tick(scene = None):
+        if scene is None:
+            scene = SceneManager.main_scene
+        SceneManager.scene_dict[scene].tick()
 
     @staticmethod
-    def append_stack(new_scene):
-        Scene.stack_append.append(new_scene)
-        Scene.stack_update = True
+    def pop(scene):
+        SceneManager.scene_dict.pop(scene)
+        if scene == SceneManager.main_scene:
+            global running
+            running = False
 
     @staticmethod
-    def insert_stack(index, new_scene):
-        Scene.stack_insert.append((index, new_scene))
-        Scene.stack_update = True
+    def add(new_scene):
+        SceneManager.scene_dict.update({new_scene: new_scene()})
 
     @staticmethod
-    def replace_stack(index, new_scene):
-        Scene.stack_replace.append((index, new_scene))
-        Scene.stack_update = True
+    def replace(old_scene, new_scene):
+        if SceneManager.main_scene == old_scene:
+            SceneManager.main_scene = new_scene
+        SceneManager.pop(old_scene)
+        SceneManager.add(new_scene)
+
+    @staticmethod
+    def reset(new_scene):
+        SceneManager.scene_dict.update({new_scene: new_scene()})
+        SceneManager.main_scene = new_scene
+
+    @staticmethod
+    def get(scene):
+        return SceneManager.scene_dict[scene]
+
+    @staticmethod
+    def set_main(scene):
+        SceneManager.main_scene = scene
 
 
 class Game:
@@ -146,9 +134,8 @@ class Game:
     def loop(self):
 
         while running:
-            Scene.stack_management()
-            Scene.stack[-1].tick()
-            Scene.stack[-1].draw()
+            SceneManager.tick()
+            SceneManager.draw()
             pg.display.flip()
             self.clock.tick(self.max_fps)
 
