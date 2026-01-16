@@ -73,7 +73,6 @@ class Scene:
             return False
 
 
-
 class SceneManager:
     scene_dict = dict()
     main_scene = None
