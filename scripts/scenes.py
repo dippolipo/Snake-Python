@@ -241,7 +241,8 @@ class MainMenu(engine.Scene):
 
     def tick(self):
         self.get_events()
-        SM.get(AutoPlay).tick()
+        if SM.get(AutoPlay):
+            SM.get(AutoPlay).tick()
 
     def key_down_events(self, key):
         if key == globs.UP:
@@ -448,22 +449,16 @@ class AutoPlay(engine.Scene):
             else:
                 self.lost = True
 
-        print("----")
         i = len(visited) - 1
         last_dir = visited[i] - visited[visited_parent[i]]
         while visited_parent[i] != 0:
             i = visited_parent[i]
             new_dir = visited[i] - visited[visited_parent[i]]
-            print("dir", new_dir)
-            print(str(visited[i]) + "-" + str(visited[visited_parent[i]]))
             if new_dir != last_dir:
-                print("dir changed")
                 self.commands.append((visited[i], last_dir))
                 last_dir = new_dir
 
         self.commands.append((start_pos, last_dir))
-
-        print(self.commands)
 
     def tick(self):
         if self.lost:
@@ -474,21 +469,14 @@ class AutoPlay(engine.Scene):
         if SM.get(Level).score != self.score:
             self.score = SM.get(Level).score
             self.find_path(SM.get(Level).snake.pos)
-            print("path found")
 
-        print(self.commands)
-        print("pos:", SM.get(Level).snake.pos)
-        if self.commands != [] and SM.get(Level).snake.pos == self.commands[-1][0]:
+        if self.commands != [] and SM.get(Level).snake.pos == self.commands[-1][0] and SM.get(MainMenu) != False:
             if self.commands[-1][1] == Vector2(1, 0):
                 SM.get(Level).key_down_events(pg.K_d)
-                print("D")
             elif self.commands[-1][1] == Vector2(-1, 0):
                 SM.get(Level).key_down_events(pg.K_a)
-                print("A")
             elif self.commands[-1][1] == Vector2(0, 1):
                 SM.get(Level).key_down_events(pg.K_s)
-                print("S")
             elif self.commands[-1][1] == Vector2(0, -1):
                 SM.get(Level).key_down_events(pg.K_w)
-                print("W")
             self.commands.pop()

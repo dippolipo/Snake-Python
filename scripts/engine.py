@@ -91,8 +91,12 @@ class SceneManager:
         SceneManager.scene_dict[scene].tick()
 
     @staticmethod
-    def pop(scene):
+    def pop(scene, new_main_scene = None):
         SceneManager.scene_dict.pop(scene)
+
+        if new_main_scene:
+            SceneManager.main_scene = new_main_scene
+
         if scene == SceneManager.main_scene:
             global running
             running = False
@@ -110,12 +114,17 @@ class SceneManager:
 
     @staticmethod
     def reset(new_scene):
+        pg.event.clear()
+        SceneManager.scene_dict.clear()
         SceneManager.scene_dict.update({new_scene: new_scene()})
         SceneManager.main_scene = new_scene
 
     @staticmethod
     def get(scene):
-        return SceneManager.scene_dict[scene]
+        if scene in SceneManager.scene_dict:
+            return SceneManager.scene_dict[scene]
+        else:
+            return False
 
     @staticmethod
     def set_main(scene):
